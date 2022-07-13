@@ -10,6 +10,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +20,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Component
-
 public class MinioUtil {
     public static Log log = LogFactory.getLog(MinioUtil.class);
 
     @Autowired
     MinioConfig minioConfig;
     private static MinioClient minioClient;
+
+    private static String endponint ;
 
     /**
      * 初始化minio配置
@@ -50,6 +51,7 @@ public class MinioUtil {
                             .endpoint(minioConfig.getEndpoint())
                             .credentials(minioConfig.getAccessKey(), minioConfig.getSecretKey())
                             .build();
+            endponint = minioConfig.getEndpoint();
         } catch (Exception e) {
             e.printStackTrace();
             log.error("minioncliet init error: ", e.fillInStackTrace());
@@ -59,7 +61,7 @@ public class MinioUtil {
     /**
      * 判断 bucket是否存在
      *
-     * @param bucketName: 文件桶名
+     * @param bucketName: buket名称
      * @return: boolean
      * @date :
      */
@@ -71,7 +73,7 @@ public class MinioUtil {
     /**
      * 创建 bucket
      *
-     * @param bucketName: 文件桶名
+     * @param bucketName: buket名称
      * @return: void
      * @date :
      */
@@ -99,19 +101,19 @@ public class MinioUtil {
 
 
     /**
-     * 将给定流作为对象上传到bucket中 （视频）
+     * 将给定流作为对象上传到bucket中
      *
-     * @param bucketName: 文件桶名
+     * @param bucketName: buket名称
      * @param objectName:   文件名
      * @param inputStream:     文件流
      * @return: java.lang.String : 文件url地址
      * @date :
      */
     @SneakyThrows(Exception.class)
-    public static String uploadStream(String bucketName, String objectName, InputStream inputStream) {
+    public static String uploadStream(String bucketName, String objectName, InputStream inputStream,String contentType) {
         ObjectWriteResponse response = minioClient.putObject(PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(
                 inputStream, inputStream.available(), -1)
-                .contentType("video/mp4")
+                .contentType(contentType)
                 .build());
         return getPresignedObjectUrl(bucketName, objectName);
     }
@@ -119,7 +121,7 @@ public class MinioUtil {
     /**
      * 文件上传
      *
-     * @param bucketName: 文件桶名
+     * @param bucketName: buket名称
      * @param objectName:       文件
      * @param fileName:       文件路径
      * @date :
@@ -134,25 +136,41 @@ public class MinioUtil {
     /**
      * 文件上传
      *
-     * @param bucketName
+     * @param bucketName buket名称
      * @param multipartFile
      */
     @SneakyThrows
     public static String upload(String bucketName, MultipartFile multipartFile) {
 
+        createBucket(bucketName);
+        //随机名称
         String objectName = ObjectId.next();
-
+        // 文件名称
+        String originalFilename = objectName +  multipartFile.getOriginalFilename();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(multipartFile.getBytes());
         minioClient.putObject(PutObjectArgs.builder().bucket(bucketName)
-                .object(objectName).stream(inputStream,
+                .object(originalFilename).stream(inputStream,
                         inputStream.available(), -1)
-                .contentType(FileTypeUtils.getFileType(multipartFile)).build());
+                .contentType(FileTypeUtils.getFileType(multipartFile))
+                .build());
 
-
-        return getPresignedObjectUrl(bucketName, objectName);
+//        return getPresignedObjectUrl(bucketName, originalFilename);
+        return originalFilename;
 
     }
 
+    /**
+     *
+     * @param bucketName
+     * @param fileName
+     * @return
+     */
+    @SneakyThrows
+    public static String getUrlPermanent(String bucketName, String  fileName) {
+
+
+        return endponint + "/" + bucketName +"/"+fileName;
+    }
     /**  上传视频
      *
      * @param bucketName
@@ -196,7 +214,7 @@ public class MinioUtil {
     /**
      * 删除文件
      *
-     * @param bucketName: 文件桶名
+     * @param bucketName: buket名称
      * @param objectName:   对象名称
      * @return: void
      * @date :
@@ -234,15 +252,15 @@ public class MinioUtil {
     /**
      * 获取minio文件的访问地址
      *
-     * @param bucketName: 桶名
-     * @param objectName:   文件名
+     * @param bucketName: buket名称
+     * @param objectName:   对象名称
      * @return: java.lang.String
      * @date :
      */
     @SneakyThrows(Exception.class)
     public static String getPresignedObjectUrl(String bucketName, String objectName) {
-        Map<String, String> reqParams = new HashMap<String, String>();
-        reqParams.put("response-content-type", "application/json");
+        /*Map<String, String> reqParams = new HashMap<String, String>();
+        reqParams.put("response-content-type", "application/json");*/
 
         String url =
                 minioClient.getPresignedObjectUrl(
@@ -250,7 +268,7 @@ public class MinioUtil {
                                 .method(Method.GET)
                                 .bucket(bucketName)
                                 .object(objectName)
-                                .expiry(2, TimeUnit.HOURS)
+                                .expiry(7, TimeUnit.DAYS)
                                 .build());
 
         return url;
@@ -308,5 +326,75 @@ public class MinioUtil {
         }
         return null;
 
+    }
+
+    /**
+     *  上传文件时，压缩比较大的图片
+     * @param buketName
+     * @param file
+     * @return
+     */
+    public static Map uploadFile(String buketName,MultipartFile file) {
+        HashMap res = new HashMap();
+        OutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayInputStream inputStream = null;
+        try{
+            // 判断上传文件是否为空
+            if (null == file || 0 == file.getSize()) {
+                res.put("msg", "上传文件不能为空");
+                return res;
+            }
+            /**
+             * 判断是否是图片
+             * 判断是否超过了 100K
+             */
+            String fileType = FileTypeUtils.getFileType(file);
+            if ( fileType.startsWith("image") && (1024 * 1024 * 0.1) <= file.getSize()) {
+                // 小于 1M 的
+                if ((1024 * 1024 * 0.1) <= file.getSize() && file.getSize() <= (1024 * 1024)) {
+                    Thumbnails.of(file.getInputStream()).scale(1f).outputQuality(0.3f).toOutputStream(outputStream);
+                }
+                // 1 - 2M 的
+                else if ((1024 * 1024) < file.getSize() && file.getSize() <= (1024 * 1024 * 2)) {
+                }
+                // 2M 以上的
+                else if ((1024 * 1024 * 2) < file.getSize()) {
+                    Thumbnails.of(file.getInputStream()).scale(1f).outputQuality(0.3f).toOutputStream(outputStream);
+                }
+                byte[] bytes = new byte[((ByteArrayOutputStream) outputStream).size()];
+                inputStream = new ByteArrayInputStream(bytes);
+                // 开始上传
+                String objectName = UUID.randomUUID() + file.getOriginalFilename();
+                MinioUtil.uploadStream(buketName,objectName ,inputStream,fileType);
+                // 返回状态以及图片路径
+                res.put("thumbnailUrl", MinioUtil.getUrlPermanent(buketName,objectName));
+            } else {
+                res.put("thumbnailUrl", null);
+            }
+
+            //正常上传
+            String objectName = MinioUtil.upload(buketName, file);
+            res.put("originUrl", MinioUtil.getUrlPermanent(buketName,objectName));
+            return res;
+        }catch(Exception e){
+            e.printStackTrace();
+            res.put("message","保存失败！"+ e.getMessage());
+            return res;
+        } finally {
+            try {
+                if (outputStream != null){
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (inputStream != null){
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

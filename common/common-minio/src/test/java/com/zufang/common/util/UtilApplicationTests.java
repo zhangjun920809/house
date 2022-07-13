@@ -10,7 +10,7 @@ class UtilApplicationTests {
     @Test
     void contextLoads() {
         System.out.println("------");
-        String asiatrip = MinioUtil.getPresignedObjectUrl("asiatrip", "上传图片.jpg");
+        String asiatrip = MinioUtil.getPresignedObjectUrl("asiatrip", "audit.txt");
         System.out.println(""+asiatrip);
     }
 

@@ -1,6 +1,8 @@
 package com.zufang.common.util.minio;
 
 import cn.hutool.core.io.FileTypeUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -16,13 +18,17 @@ public class FileTypeUtils {
     private final static String APPLICATION_TYPE = "application/";
     private final static String TXT_TYPE = "text/";
 
+    public static Log log = LogFactory.getLog(FileTypeUtils.class);
     public static String getFileType(MultipartFile multipartFile) {
 
         try {
 
             String type = FileTypeUtil.getType(multipartFile.getInputStream());
-
-            if (type.equalsIgnoreCase("JPG") || type.equalsIgnoreCase("JPEG") || type.equalsIgnoreCase("GIF") || type.equalsIgnoreCase("PNG") || type.equalsIgnoreCase("BMP") || type.equalsIgnoreCase("PCX") || type.equalsIgnoreCase("TGA") || type.equalsIgnoreCase("PSD") || type.equalsIgnoreCase("TIFF")) {
+            if (type == null){
+                return TXT_TYPE + "plain";
+            }
+            log.info("type:"+type);
+            if (type.equalsIgnoreCase("JPG") || type.equalsIgnoreCase("JPEG") || type.equalsIgnoreCase("GIF") || type.equalsIgnoreCase("PNG") || type.equalsIgnoreCase("BMP") || type.equalsIgnoreCase("PCX") || type.equalsIgnoreCase("TGA") || type.equalsIgnoreCase("PSD") || type.equalsIgnoreCase("TIFF") || type.equalsIgnoreCase("webp")) {
                 return IMAGE_TYPE + type;
             }
 
