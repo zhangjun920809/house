@@ -1,6 +1,6 @@
 package com.zufang.common.util;
 
-import com.zufang.common.util.minio.MinioUtil;
+import com.zufang.common.minio.utils.MinioUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
