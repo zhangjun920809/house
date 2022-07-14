@@ -9,12 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>common</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>common-minio</module>
-        <module>common-utils</module>
-    </modules>
+    <artifactId>server-base</artifactId>
 
 
 </project>

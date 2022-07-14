@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * @author User
+ * @date 2022/7/13 21:29
+ */
 @Data
 @Slf4j
 public class SecurityUser implements UserDetails {
@@ -30,7 +34,7 @@ public class SecurityUser implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         for(String permissionValue : permissionList) {
-            if(StringUtils.isEmpty(permissionValue)) continue;
+            if(StringUtils.isEmpty(permissionValue)){ continue;}
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(permissionValue);
             authorities.add(authority);
         }
@@ -44,7 +48,7 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userInfo.getUserName();
+        return userInfo.getUsername();
     }
 
     @Override

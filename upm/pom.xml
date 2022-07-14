@@ -3,34 +3,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <artifactId>house</artifactId>
+        <groupId>com.zufang.app</groupId>
+        <version>1.0</version>
     </parent>
     <groupId>com.zufang.app</groupId>
     <artifactId>upm</artifactId>
     <version>1.0</version>
     <name>upm</name>
-    <description>用户权限管理</description>
+    <description>用户管理</description>
     <properties>
         <java.version>1.8</java.version>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+            <groupId>com.zufang.app</groupId>
+            <artifactId>server-base</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>5.2.2.RELEASE</version>
         </dependency>
     </dependencies>
 
