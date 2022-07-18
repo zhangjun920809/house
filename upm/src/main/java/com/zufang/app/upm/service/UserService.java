@@ -10,4 +10,6 @@ import com.zufang.app.upm.entity.User;
  */
 public interface UserService extends IService<User> {
     void register(RegisterVo registerVo);
+
+    User getUserByName(String username);
 }
