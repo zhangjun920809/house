@@ -37,6 +37,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
         this.defaultPasswordEncoder = defaultPasswordEncoder;
         this.tokenManager = tokenManager;
         this.redisTemplate = redisTemplate;
+        System.out.println("================================");
     }
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -58,6 +59,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(new UnauthorizedEntryPoint())
                 .and().csrf().disable()
                 .authorizeRequests()
+                .antMatchers("/users/register").permitAll()
                 .anyRequest().authenticated()
                 .and().logout().logoutUrl("/admin/acl/index/logout")//设置退出地址
                 .addLogoutHandler(new TokenLogoutHandler(tokenManager,redisTemplate)).and()

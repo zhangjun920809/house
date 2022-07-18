@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 public class DefaultPasswordEncoder implements PasswordEncoder {
 
     @Autowired
-    public BCryptPasswordEncoder bCryptPasswordEncoder;
+    public BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Bean
     public BCryptPasswordEncoder getBCryptPasswordEncoder(){
