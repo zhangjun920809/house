@@ -6,6 +6,8 @@ import com.zufang.app.upm.entity.RegisterVo;
 import com.zufang.app.upm.entity.User;
 import com.zufang.app.upm.mapper.UserMapper;
 import com.zufang.app.upm.service.UserService;
+import com.zufang.serverbase.JwtUtils;
+import com.zufang.serverbase.Response;
 import com.zufang.serverbase.exception.ZufangException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author User
@@ -66,5 +69,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public User getUserByName(String username) {
 
         return baseMapper.selectOne(new QueryWrapper<User>().eq("username",username));
+    }
+
+    @Override
+    public String login(RegisterVo registerVo) {
+        String username = registerVo.getUsername();
+        String password = registerVo.getPassword();
+
+        // todo 验证码功能
+        if(StringUtils.isEmpty(username) || StringUtils.isEmpty(password)){
+            throw new ZufangException(20001,"用户名或密码为空");
+        }
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username",username);
+        User user = baseMapper.selectOne(wrapper);
+        if (user == null){
+            throw new ZufangException(20001,"用户名或密码错误！");
+        }
+        if(!bCryptPasswordEncoder.matches(password,user.getPassword())){
+            throw new ZufangException(20001,"用户名或密码错误！");
+        }
+        if(user.getIsDisabled()){
+            throw new ZufangException(20001,"用户被禁用！");
+        }
+        //生成jwtToken
+        String token = JwtUtils.getJwtToken(user.getId(), user.getUsername());
+
+        return token;
     }
 }

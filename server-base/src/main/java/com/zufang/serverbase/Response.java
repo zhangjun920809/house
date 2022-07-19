@@ -34,7 +34,7 @@ public class Response {
         Response r = new Response();
         r.setSuccess(true);
         r.setCode(20001);
-        r.setMessage("成功。。。");
+        r.setMessage("成功!");
         return r;
     }
 
@@ -43,7 +43,7 @@ public class Response {
         Response r = new Response();
         r.setSuccess(false);
         r.setCode(20002);
-        r.setMessage("失败");
+        r.setMessage("失败!");
         return r;
     }
 

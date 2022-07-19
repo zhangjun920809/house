@@ -16,4 +16,8 @@ public class User implements Serializable {
     private String password;
     //头像
     private String salt;
+    //手机号
+    private String mobile;
+    // 验证码
+    private String code;
 }

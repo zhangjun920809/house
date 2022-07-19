@@ -24,7 +24,7 @@ public class UserController {
     //注册
     @PostMapping("/register")
 //    public Response register(@RequestBody RegisterVo registerVo){
-    public Response register(@RequestBody  RegisterVo registerVo){
+    public Response register( RegisterVo registerVo){
         try{
             userServiceImpl.register(registerVo);
         }catch(ZufangException e){
@@ -32,5 +32,13 @@ public class UserController {
         }
 
         return Response.ok();
+    }
+
+    @PostMapping("/login")
+//    public Response register(@RequestBody RegisterVo registerVo){
+    public Response login( @RequestBody RegisterVo registerVo){
+        String token = userServiceImpl.login(registerVo);
+
+        return Response.ok().data("token",token);
     }
 }

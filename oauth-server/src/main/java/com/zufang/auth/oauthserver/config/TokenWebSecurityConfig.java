@@ -49,8 +49,8 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers("/api/**",
                 "/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**","/users/register"
         );//设置哪些路径不做拦截，如swagger等
-        web.ignoring().antMatchers("/*/**"
-        );
+//        web.ignoring().antMatchers("/*/**"
+//        );
     }
 
     @Override
@@ -59,7 +59,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(new UnauthorizedEntryPoint())
                 .and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/users/register").permitAll()
+                //.antMatchers("/users/register").permitAll()
                 .anyRequest().authenticated()
                 .and().logout().logoutUrl("/admin/acl/index/logout")//设置退出地址
                 .addLogoutHandler(new TokenLogoutHandler(tokenManager,redisTemplate)).and()
